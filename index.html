@@ -80,5 +80,5 @@
 <button id="topBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">↑</button>
 </div>
 
-<div class="modal" id="authModal"><div class="modalbox"><div class="between"><h2>로그인</h2><button class="tinybtn" onclick="closeAuth()">닫기</button></div><p>이전에 사용한 아이디와 이메일을 입력하면 저장된 기록을 불러옵니다.</p><label>아이디(닉네임)</label><input id="loginName" placeholder="사용할 아이디"><label>이메일</label><input id="loginEmail" type="email" placeholder="name@example.com"><button class="btn full" onclick="login()">데모 로그인</button><p class="muted">실제 계정 인증 및 비밀번호 저장은 연결되어 있지 않습니다.</p></div></div>
+<div class="modal" id="authModal"><div class="modalbox"><div class="between"><h2>로그인 / 회원가입</h2><button class="tinybtn" onclick="closeAuth()">닫기</button></div><p>닉네임과 이메일을 입력해 JOIN 회원정보 시트에 등록하거나 로그인 기록을 갱신합니다.</p><label>아이디(닉네임)</label><input id="loginName" placeholder="사용할 아이디" autocomplete="nickname"><label>이메일</label><input id="loginEmail" type="email" placeholder="name@example.com" autocomplete="email"><button class="btn full" onclick="registerMember()">회원가입</button><button class="btn line full" onclick="login()" style="margin-top:8px">로그인</button><p id="authStatus" class="muted" role="status" aria-live="polite">회원정보는 Google 스프레드시트 JOIN에 기록됩니다. 비밀번호 기반 인증은 포함되어 있지 않습니다.</p></div></div>
 <script src="js/app.js" defer></script></body></html>
