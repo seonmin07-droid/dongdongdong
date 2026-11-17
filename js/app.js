@@ -56,6 +56,29 @@ fun main() {
 ];
 let purposeFilter='전체', currentMode='file', currentProject=null, user=null, likes=new Set(), imports=new Set(), myProjects=[];
 const STORAGE_KEY='specCheckAI_accounts_v1', SESSION_KEY='specCheckAI_session_v1';
+const JOIN_API_URL='https://script.google.com/macros/s/AKfycbwfkjH6HVLeDTdVC_Fzroqvnb-BYJEOv08YztPSB3fuN8nIGMm3BPfltaW0_P_4pu0g/exec';
+function setAuthStatus(message){const el=document.getElementById('authStatus');if(el)el.textContent=message;}
+async function sendJOINRequest(action,nickname,email){
+ const payload={action,nickname,email};
+ // text/plain + no-cors avoids preflight; opaque response cannot confirm server-side success.
+ const response=await fetch(JOIN_API_URL,{method:'POST',mode:'no-cors',redirect:'follow',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)});
+ return response;
+}
+function activateLocalSession(nickname,email){
+ const key=accountKey(email),accounts=readAccounts();
+ const previous=accounts[key]||{};
+ user={name:previous.name||nickname,email};
+ loadAccountData(email);
+ localStorage.setItem(SESSION_KEY,JSON.stringify(user));
+ localStorage.setItem('specCheckAI_lastAccount',JSON.stringify(user));
+ accounts[key]={name:user.name,email:user.email,projects:myProjects,likes:[...likes],imports:[...imports]};
+ writeAccounts(accounts);
+ document.getElementById('userLabel').textContent=user.name;
+ document.getElementById('authBtn').textContent='로그아웃';
+ document.getElementById('authBtn').onclick=logout;
+ renderMy();
+}
+
 function readAccounts(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch(e){return {}}}
 function writeAccounts(data){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 function accountKey(email){return String(email||'').trim().toLowerCase()}
@@ -169,26 +192,49 @@ function renderMy(){
  document.getElementById('myProjectList').innerHTML=user?myProjects.map(p=>`<div class="listrow"><b>${esc(p.title)}</b><span class="tag blue">${p.score}%</span><p>${esc(p.purpose)} · ${esc(p.lang)}</p></div>`).join('')||'<p>아직 등록한 프로젝트가 없습니다.</p>':'';
 }
 function openAuth(){
- const accounts=readAccounts(), last=JSON.parse(localStorage.getItem('specCheckAI_lastAccount')||'null');
- if(last){document.getElementById('loginName').value=last.name||'';document.getElementById('loginEmail').value=last.email||''}
- document.getElementById('authModal').classList.add('show')
+ const last=JSON.parse(localStorage.getItem('specCheckAI_lastAccount')||'null');
+ if(last){document.getElementById('loginName').value=last.name||'';document.getElementById('loginEmail').value=last.email||'';}
+ setAuthStatus('닉네임과 이메일을 입력한 뒤 회원가입 또는 로그인을 선택하세요.');
+ document.getElementById('authModal').classList.add('show');
 }
-function closeAuth(){document.getElementById('authModal').classList.remove('show')}
-function login(){
- let name=document.getElementById('loginName').value.trim(),email=document.getElementById('loginEmail').value.trim();
- if(!name||!email.includes('@')){alert('아이디와 올바른 이메일을 입력해 주세요.');return}
- const key=accountKey(email), accounts=readAccounts(), previous=accounts[key];
- // The email is the demo account key; a saved profile name is restored when the same email is used.
- user={name:previous?.name||name,email:previous?.email||email};
- loadAccountData(email);
- localStorage.setItem(SESSION_KEY,JSON.stringify(user));
- localStorage.setItem('specCheckAI_lastAccount',JSON.stringify(user));
- accounts[key]={name:user.name,email:user.email,projects:myProjects,likes:[...likes],imports:[...imports]};
- writeAccounts(accounts);
- document.getElementById('userLabel').textContent=user.name;
- document.getElementById('authBtn').textContent='로그아웃';
- document.getElementById('authBtn').onclick=logout;
- closeAuth();renderMy();
+function closeAuth(){document.getElementById('authModal').classList.remove('show');}
+function validateAuthInput(){
+ const nickname=document.getElementById('loginName').value.trim();
+ const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+ if(!nickname){setAuthStatus('닉네임을 입력해 주세요.');document.getElementById('loginName').focus();return null;}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAuthStatus('올바른 이메일 주소를 입력해 주세요.');document.getElementById('loginEmail').focus();return null;}
+ return {nickname,email};
+}
+async function registerMember(){
+ const values=validateAuthInput();if(!values)return;
+ const button=document.getElementById('registerBtn');button.disabled=true;button.textContent='전송 중...';
+ setAuthStatus('JOIN 시트로 회원가입 정보를 전송하고 있습니다.');
+ try{
+  await sendJOINRequest('register',values.nickname,values.email);
+  activateLocalSession(values.nickname,values.email);
+  setAuthStatus('회원가입 요청을 보냈습니다. JOIN 시트에서 저장 여부를 확인해 주세요.');
+  closeAuth();
+  alert('회원가입 요청을 전송했습니다. JOIN 시트에서 실제 저장 여부를 확인해 주세요.');
+ }catch(error){
+  console.error('JOIN register error:',error);
+  setAuthStatus('전송 오류: '+(error.message||String(error)));
+  alert('회원가입 요청 중 오류가 발생했습니다. 인터넷 연결과 Apps Script 배포 상태를 확인해 주세요.');
+ }finally{button.disabled=false;button.textContent='회원가입';}
+}
+async function login(){
+ const values=validateAuthInput();if(!values)return;
+ const button=document.getElementById('loginBtn');button.disabled=true;button.textContent='확인 중...';
+ setAuthStatus('JOIN 시트에 로그인 기록을 요청하고 있습니다.');
+ try{
+  await sendJOINRequest('login',values.nickname,values.email);
+  activateLocalSession(values.nickname,values.email);
+  closeAuth();
+  alert('로그인 기록 갱신 요청을 전송했습니다. JOIN 시트의 last_login_at을 확인해 주세요.');
+ }catch(error){
+  console.error('JOIN login error:',error);
+  setAuthStatus('전송 오류: '+(error.message||String(error)));
+  alert('로그인 요청 중 오류가 발생했습니다. 인터넷 연결과 Apps Script 배포 상태를 확인해 주세요.');
+ }finally{button.disabled=false;button.textContent='로그인';}
 }
 function logout(){
  saveAccountData();
