@@ -21,8 +21,9 @@
 
 <!-- LIST -->
 <section id="list" class="page">
- <div class="eyebrow">PUBLIC REPORT LIBRARY</div><h1>스펙체크 목록</h1><p>사용자들이 공개한 요구사항과 코드 검증 리포트를 탐색하세요.</p>
- <input id="searchInput" placeholder="프로젝트명, 키워드 검색" oninput="renderList()">
+ <div class="eyebrow">PUBLIC REPORT LIBRARY</div><h1>탐색</h1><p>다른 사용자가 공개한 스펙체크를 검색하고 좋아요 또는 최신순으로 살펴보세요.</p>
+ <label for="searchInput">스펙 검색</label><input id="searchInput" type="search" placeholder="프로젝트명, 설명, 요구사항, 코드, 작성자 검색" oninput="renderList()">
+ <label for="sortFilter">정렬 기준</label><select id="sortFilter" onchange="renderList()"><option value="likes">좋아요 많은 순</option><option value="recent">최신 등록 순</option></select>
  <label>목적별 필터</label><div class="filters" id="purposeFilters"><button class="sel" onclick="filterPurpose('전체',this)">전체</button><button onclick="filterPurpose('과제',this)">과제</button><button onclick="filterPurpose('창업',this)">창업</button><button onclick="filterPurpose('연습',this)">연습</button><button onclick="filterPurpose('포트폴리오',this)">포트폴리오</button><button onclick="filterPurpose('업무',this)">업무</button></div>
  <label>도메인별 필터</label><select id="domainFilter" onchange="renderList()"><option value="전체">전체 도메인</option><option>교육</option><option>생산성</option><option>쇼핑·커머스</option><option>금융</option><option>헬스케어</option><option>커뮤니티</option><option>기타</option></select>
  <label>프로그래밍 언어</label><select id="langFilter" onchange="renderList()"><option value="전체">전체 언어</option><option>Python</option><option>Java</option><option>JavaScript</option><option>TypeScript</option><option>C</option><option>C++</option><option>C#</option><option>Kotlin</option><option>Swift</option><option>PHP</option><option>Go</option><option>기타</option></select>
@@ -76,9 +77,9 @@
  <button class="btn line full" onclick="logout()">로그아웃</button>
 </section>
 </main><footer>Spec-Check AI · Community MVP</footer>
-<nav><button class="active" data-page="home" onclick="go('home')"><b>⌂</b>홈</button><button data-page="list" onclick="go('list')"><b>▤</b>스펙체크 목록</button><button data-page="check" onclick="go('check')"><b>＋</b>스펙체크 확인</button><button data-page="mypage" onclick="go('mypage')"><b>♙</b>마이페이지</button></nav>
+<nav><button class="active" data-page="home" onclick="go('home')"><b>⌂</b>홈</button><button data-page="list" onclick="go('list')"><b>⌕</b>탐색</button><button data-page="mypage" onclick="go('mypage')"><b>♙</b>마이페이지</button></nav>
 <button id="topBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">↑</button>
 </div>
 
-<div class="modal" id="authModal"><div class="modalbox"><div class="between"><h2>회원가입 / 로그인</h2><button class="tinybtn" type="button" onclick="closeAuth()">닫기</button></div><p>닉네임과 이메일을 입력하면 JOIN 회원정보 시트에 기록합니다.</p><label for="loginName">아이디(닉네임)</label><input id="loginName" placeholder="사용할 아이디" autocomplete="nickname"><label for="loginEmail">이메일</label><input id="loginEmail" type="email" placeholder="name@example.com" autocomplete="email"><button class="btn full" type="button" id="registerBtn" onclick="registerMember()">회원가입</button><button class="btn line full" type="button" id="loginBtn" onclick="login()" style="margin-top:8px">로그인</button><p id="authStatus" class="muted" role="status" aria-live="polite">회원정보는 Google 스프레드시트 JOIN에 기록됩니다.</p></div></div>
+<div class="modal" id="authModal"><div class="modalbox"><div class="between"><h2>로그인</h2><button class="tinybtn" onclick="closeAuth()">닫기</button></div><p>이전에 사용한 아이디와 이메일을 입력하면 저장된 기록을 불러옵니다.</p><label>아이디(닉네임)</label><input id="loginName" placeholder="사용할 아이디"><label>이메일</label><input id="loginEmail" type="email" placeholder="name@example.com"><button class="btn full" onclick="login()">데모 로그인</button><p class="muted">실제 계정 인증 및 비밀번호 저장은 연결되어 있지 않습니다.</p></div></div>
 <script src="js/app.js" defer></script></body></html>
